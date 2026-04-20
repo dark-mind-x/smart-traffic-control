@@ -1,0 +1,24 @@
+{
+  "junction1": {
+    "emergency": {
+      "active": false,
+      "road": ""
+    },
+    "road1": {
+      "color": "green",
+      "intensity": "high"
+    },
+    "road2": {
+      "color": "red",
+      "intensity": "low"
+    },
+    "road3": {
+      "color": "red",
+      "intensity": "high"
+    },
+    "road4": {
+      "color": "red",
+      "intensity": "low"
+    }
+  }
+}

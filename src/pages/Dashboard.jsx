@@ -3,8 +3,9 @@ import { ref, onValue } from 'firebase/database';
 import { signOut } from 'firebase/auth';
 import { auth, database } from '../services/firebaseConfig';
 import TrafficLight from '../components/TrafficLight';
+import EmergencyAlert from '../components/EmergencyAlert';
 
-// A reusable mini-component for the Intensity Badge
+// Reusable mini-component for the Intensity Badge
 const IntensityBadge = ({ intensity }) => {
   const isHigh = intensity && intensity.toLowerCase() === 'high';
   return (
@@ -27,7 +28,7 @@ const IntensityBadge = ({ intensity }) => {
 };
 
 const Dashboard = () => {
-  // 1. Upgraded State: Now holds both color and intensity for each road
+  // State for the four roads
   const [junctionData, setJunctionData] = useState({
     road1: { color: 'red', intensity: 'low' },
     road2: { color: 'red', intensity: 'low' },
@@ -35,12 +36,16 @@ const Dashboard = () => {
     road4: { color: 'red', intensity: 'low' }
   });
 
-  // 2. Upgraded Listener: Parses the nested objects from Firebase
+  // State for the emergency override
+  const [emergency, setEmergency] = useState({ active: false, road: '' });
+
+  // Firebase Realtime Database Listener
   useEffect(() => {
     const trafficRef = ref(database, 'junction1');
     const unsubscribe = onValue(trafficRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
+        // Update Roads
         setJunctionData({
           road1: {
             color: data.road1?.color || 'red',
@@ -59,6 +64,16 @@ const Dashboard = () => {
             intensity: data.road4?.intensity || 'low'
           }
         });
+        
+        // Update Emergency Status
+        if (data.emergency) {
+          setEmergency({
+            active: data.emergency.active || false,
+            road: data.emergency.road || ''
+          });
+        } else {
+          setEmergency({ active: false, road: '' });
+        }
       }
     });
     return () => unsubscribe();
@@ -121,7 +136,7 @@ const Dashboard = () => {
         .junction-title {
           color: #f8fafc;
           font-size: 1.8rem;
-          margin-bottom: 40px;
+          margin-bottom: 30px;
           border-bottom: 2px solid #38bdf8;
           padding-bottom: 10px;
           text-align: center;
@@ -187,6 +202,9 @@ const Dashboard = () => {
 
         <div className="main-container">
           <h2 className="junction-title">Main Intersection (J1)</h2>
+          
+          {/* Conditionally render the Emergency Alert Banner */}
+          {emergency.active && <EmergencyAlert road={emergency.road} />}
           
           <div className="junction-card">
             <div className="intersection-grid">
